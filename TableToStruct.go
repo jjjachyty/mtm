@@ -105,7 +105,7 @@ func (t2s *TableToStruct) Run() error {
 		ttf._struct = structName
 
 		//2、循环获取table Column列表
-		columns, err := db.Query("SELECT COLUMN_NAME,DATA_TYPE,IS_NULLABLE,TABLE_NAME,COLUMN_COMMENT FROM information_schema.COLUMNS WHERE table_schema=DATABASE () AND table_name=?;", structName)
+		columns, err := db.Query("SELECT COLUMN_NAME,DATA_TYPE,IS_NULLABLE,TABLE_NAME,COLUMN_COMMENT FROM information_schema.COLUMNS WHERE table_schema=DATABASE () AND table_name=? order by ORDINAL_POSITION;", structName)
 		if err != nil {
 			return err
 		}
@@ -127,7 +127,7 @@ func (t2s *TableToStruct) Run() error {
 			structName = strFirstToUpper(structName)
 		}
 		ttf._fileName = strFirstToLower(structName)
-		t2s.Comment = "//" + structName + "\n"
+		ttf._comment = "//" + structName + "\n"
 		ttf._struct = "type " + structName + " struct {\n"
 		//3.2、输出属性
 		ttf._property = make([]string, 0)
@@ -243,7 +243,7 @@ func (t *TableToStruct) saveToFile() error {
 	if !t.IfOneFile {
 		for _, v := range t.tableToFile {
 			//4、写入文件
-			file := "package " + strings.ToLower(t.PackageName) + "\n" + "import (\n" + v._importToStr() + ")\n" + v._struct + v._propertyToStr() + "\n}\n"
+			file := "package " + strings.ToLower(t.PackageName) + "\n" + "import (\n" + v._importToStr() + ")\n" + v._comment + v._struct + v._propertyToStr() + "\n}\n"
 			err := t.save(v._fileName+".go", file)
 			if err != nil {
 				return err
@@ -255,11 +255,11 @@ func (t *TableToStruct) saveToFile() error {
 		for _, v := range t.tableToFile {
 			//4、写入文件
 			importStr += v._importToStr()
-			content += v._struct + v._propertyToStr() + "\n}\n"
+			content += v._comment + v._struct + v._propertyToStr() + "\n}\n"
 		}
 		importStr += ")\n"
 
-		file := "package " + t.PackageName + "\n" + importStr + t.Comment + content
+		file := "package " + t.PackageName + "\n" + importStr + content
 		err := t.save(t.FileName, file)
 		if err != nil {
 			return err
