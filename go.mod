@@ -1,4 +1,4 @@
-module mtm
+module dbtos
 
 go 1.16
 
