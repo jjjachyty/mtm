@@ -1,4 +1,4 @@
-module dbtos
+module github.com/chen-t-t/mtm
 
 go 1.16
 
