@@ -15,12 +15,12 @@ import (
 
 //map for converting mysql type to golang types
 var typeForMysqlToGo = map[string]string{
-	"int":                "int",
-	"integer":            "int",
-	"tinyint":            "int",
+	"int":                "int32",
+	"integer":            "int32",
+	"tinyint":            "int8",
 	"smallint":           "int",
 	"mediumint":          "int",
-	"bigint":             "int",
+	"bigint":             "int64",
 	"int unsigned":       "int",
 	"integer unsigned":   "int",
 	"tinyint unsigned":   "int",
@@ -57,7 +57,7 @@ func CreateTableToStruct(options *Options) *TableToStruct {
 		log.Fatal("MySqlUrl参数不能为空")
 	}
 	if len(options.PackageName) == 0 {
-		options.PackageName = "Models"
+		options.PackageName = "entity"
 	}
 	if len(options.SavePath) == 0 {
 		options.SavePath = "./Models"
@@ -103,6 +103,7 @@ func (t2s *TableToStruct) Run() error {
 		ttf := new(TableToFile)
 		ttf._import = make(map[string]string)
 		ttf._struct = structName
+
 		//2、循环获取table Column列表
 		columns, err := db.Query("SELECT COLUMN_NAME,DATA_TYPE,IS_NULLABLE,TABLE_NAME,COLUMN_COMMENT FROM information_schema.COLUMNS WHERE table_schema=DATABASE () AND table_name=?;", structName)
 		if err != nil {
@@ -125,7 +126,8 @@ func (t2s *TableToStruct) Run() error {
 		if t2s.IfCapitalizeFirstLetter {
 			structName = strFirstToUpper(structName)
 		}
-		ttf._fileName = structName
+		ttf._fileName = strFirstToLower(structName)
+		t2s.Comment = "//" + structName + "\n"
 		ttf._struct = "type " + structName + " struct {\n"
 		//3.2、输出属性
 		ttf._property = make([]string, 0)
@@ -146,19 +148,38 @@ func (t2s *TableToStruct) Run() error {
 			if _type == "time.Time" {
 				ttf._import["time"] = `"time"`
 			}
+			columnName2 := ""
+			if t2s.IfCapitalizeFirstLetter {
+				columnName2 = strFirstToUpper(columnName)
+			} else {
+				columnName2 = strFirstToLower(columnName)
+			}
+
+			if t2s.IfToHump {
+				columnName2 = toHump(columnName2)
+			}
+			if t2s.IfCapitalizeFirstLetter {
+				columnName2 = strFirstToUpper(columnName2)
+			} else {
+				columnName2 = strFirstToLower(columnName2)
+			}
+
+			ttf._property = append(ttf._property, fmt.Sprintf("	%s %s `db:\"%s\" json:\"%s\" ` //%s", columnName2, _type, columnName, columnName2, columnComment))
+
 			if t2s.IfToHump {
 				columnName = toHump(columnName)
 			}
+
 			if t2s.IfCapitalizeFirstLetter {
 				columnName = strFirstToUpper(columnName)
 			} else {
 				columnName = strFirstToLower(columnName)
 			}
 
-			if t2s.IfJsonTag {
-				ttf._property = append(ttf._property, fmt.Sprintf("	%s %s `json:\"%s\"` //%s", columnName, _type, columnName, columnComment))
+			if t2s.IfCapitalizeFirstLetter {
+				columnName = strFirstToUpper(columnName)
 			} else {
-				ttf._property = append(ttf._property, fmt.Sprintf("	%s %s //%s", columnName, _type, columnComment))
+				columnName = strFirstToLower(columnName)
 			}
 		}
 		t2s.tableToFile = append(t2s.tableToFile, ttf)
@@ -196,6 +217,7 @@ type TableToStruct struct {
 	IfPluralToSingular      bool
 	IfCapitalizeFirstLetter bool
 	tableToFile             []*TableToFile
+	Comment                 string
 }
 
 type TableToFile struct {
@@ -203,6 +225,7 @@ type TableToFile struct {
 	_struct   string
 	_fileName string
 	_property []string
+	_comment  string
 }
 
 func (t *TableToFile) _importToStr() string {
@@ -220,7 +243,7 @@ func (t *TableToStruct) saveToFile() error {
 	if !t.IfOneFile {
 		for _, v := range t.tableToFile {
 			//4、写入文件
-			file := "package " + t.PackageName + "\n" + "import (\n" + v._importToStr() + ")\n" + v._struct + v._propertyToStr() + "\n}\n"
+			file := "package " + strings.ToLower(t.PackageName) + "\n" + "import (\n" + v._importToStr() + ")\n" + v._struct + v._propertyToStr() + "\n}\n"
 			err := t.save(v._fileName+".go", file)
 			if err != nil {
 				return err
@@ -235,7 +258,8 @@ func (t *TableToStruct) saveToFile() error {
 			content += v._struct + v._propertyToStr() + "\n}\n"
 		}
 		importStr += ")\n"
-		file := "package " + t.PackageName + "\n" + importStr + content
+
+		file := "package " + t.PackageName + "\n" + importStr + t.Comment + content
 		err := t.save(t.FileName, file)
 		if err != nil {
 			return err
