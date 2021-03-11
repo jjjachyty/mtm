@@ -132,9 +132,9 @@ func (t2s *TableToStruct) Run() error {
 		//3.2、输出属性
 		ttf._property = make([]string, 0)
 		ttf._import["pb"] = `"pkg/proto/message/pb"`
-		funcPb := "func (* " + structName + ")" + "Pb" + "()" + "pb." + structName + "{" + "\n" +
+		funcPb := "func (* " + structName + ")" + "Pb" + "()" + "*pb." + structName + "{" + "\n" +
 			"	return" + " &pb." + structName + "{\n"
-		funcPbs := "func (* " + structName + ")" + "Pbs" + "(v *pb." + structName + ")" + "[]pb." + structName + "{" + "\n" + "" +
+		funcPbs := "func (* " + structName + ")" + "Pbs" + "(v *pb." + structName + ")" + "[]*pb." + structName + "{" + "\n" + "" +
 			"	for _,v := range v { \n"
 		for columns.Next() {
 			columnName := ""
