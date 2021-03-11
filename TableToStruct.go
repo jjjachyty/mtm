@@ -132,10 +132,13 @@ func (t2s *TableToStruct) Run() error {
 		//3.2、输出属性
 		ttf._property = make([]string, 0)
 		ttf._import["pb"] = `"pkg/proto/message/pb"`
+
 		funcPb := "func (v *" + structName + ")" + "Pb" + "()" + "*pb." + structName + "{" + "\n" +
 			"	return" + " &pb." + structName + "{\n"
-		funcPbs := "func (* " + structName + ")" + "Pbs" + "(v []*pb." + structName + ")" + "[]*pb." + structName + "{" + "\n" + "" +
-			"	for _,v := range v { \n"
+		funcPbs := "type " + structName + "s  []*" + structName + "\n\n" +
+			"func (* " + structName + "s" + ")" + "Pbs" + "(v []*pb." + structName + ")" + "data []*pb." + structName + "{" + "\n" + "" +
+			"	for _,v := range v { \n" +
+			"		data = append(data," + "&pb." + structName + "{\n"
 		for columns.Next() {
 			columnName := ""
 			dataType := ""
@@ -189,8 +192,8 @@ func (t2s *TableToStruct) Run() error {
 				columnName = strFirstToLower(columnName)
 			}
 		}
-		funcPb += "}\n}\n"
-		funcPbs += "}\n}\n"
+		funcPb += "}\n	}\n"
+		funcPbs += "return \n	}\n}\n"
 		ttf._func = funcPb + funcPbs
 		t2s.tableToFile = append(t2s.tableToFile, ttf)
 	}
