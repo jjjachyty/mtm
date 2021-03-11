@@ -136,7 +136,7 @@ func (t2s *TableToStruct) Run() error {
 		funcPb := "func (v *" + structName + ")" + "Pb" + "()" + "*pb." + structName + "{" + "\n" +
 			"	return" + " &pb." + structName + "{\n"
 		funcPbs := "type " + structName + "s  []*" + structName + "\n\n" +
-			"func (* " + structName + "s" + ")" + "Pbs" + "(v []*pb." + structName + ")" + "data []*pb." + structName + "{" + "\n" + "" +
+			"func (* " + structName + "s" + ")" + "Pbs" + "(v []*pb." + structName + ")" + "(data []*pb." + structName + "){" + "\n" + "" +
 			"	for _,v := range v { \n" +
 			"		data = append(data," + "&pb." + structName + "{\n"
 		for columns.Next() {
@@ -193,7 +193,7 @@ func (t2s *TableToStruct) Run() error {
 			}
 		}
 		funcPb += "}\n	}\n"
-		funcPbs += "return \n	}\n}\n"
+		funcPbs += "})\n	}\n return \n}\n"
 		ttf._func = funcPb + funcPbs
 		t2s.tableToFile = append(t2s.tableToFile, ttf)
 	}
