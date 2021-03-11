@@ -132,9 +132,9 @@ func (t2s *TableToStruct) Run() error {
 		//3.2、输出属性
 		ttf._property = make([]string, 0)
 		ttf._import["pb"] = `"pkg/proto/message/pb"`
-		funcPb := "func (* " + structName + ")" + "Pb" + "()" + "*pb." + structName + "{" + "\n" +
+		funcPb := "func (v *" + structName + ")" + "Pb" + "()" + "*pb." + structName + "{" + "\n" +
 			"	return" + " &pb." + structName + "{\n"
-		funcPbs := "func (* " + structName + ")" + "Pbs" + "(v *pb." + structName + ")" + "[]*pb." + structName + "{" + "\n" + "" +
+		funcPbs := "func (* " + structName + ")" + "Pbs" + "(v []*pb." + structName + ")" + "[]*pb." + structName + "{" + "\n" + "" +
 			"	for _,v := range v { \n"
 		for columns.Next() {
 			columnName := ""
@@ -171,8 +171,8 @@ func (t2s *TableToStruct) Run() error {
 
 			ttf._property = append(ttf._property, fmt.Sprintf("	%s %s `db:\"%s\" json:\"%s\" ` //%s", columnName2, _type, columnName, columnName2, columnComment))
 
-			funcPb += "			" + columnName2 + ":" + "v." + columnName2 + "\n"
-			funcPbs += "		" + columnName2 + ":" + "v." + columnName2 + "\n"
+			funcPb += "			" + columnName2 + ":" + "v." + columnName2 + ",\n"
+			funcPbs += "		" + columnName2 + ":" + "v." + columnName2 + ",\n"
 			if t2s.IfToHump {
 				columnName = toHump(columnName)
 			}
@@ -189,8 +189,8 @@ func (t2s *TableToStruct) Run() error {
 				columnName = strFirstToLower(columnName)
 			}
 		}
-		funcPb += "}\n\n"
-		funcPbs += "}\n\n"
+		funcPb += "}\n}\n"
+		funcPbs += "}\n}\n"
 		ttf._func = funcPb + funcPbs
 		t2s.tableToFile = append(t2s.tableToFile, ttf)
 	}
