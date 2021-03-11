@@ -188,9 +188,9 @@ func (t2s *TableToStruct) Run() error {
 			} else {
 				columnName = strFirstToLower(columnName)
 			}
-			funcPb += "}\n\n"
-			funcPbs += "}\n\n"
 		}
+		funcPb += "}\n\n"
+		funcPbs += "}\n\n"
 		ttf._func = funcPb + funcPbs
 		t2s.tableToFile = append(t2s.tableToFile, ttf)
 	}
