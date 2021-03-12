@@ -292,7 +292,7 @@ func (t *TableToStruct) save(fileName string, content string) error {
 	}
 	//创建目录
 	os.MkdirAll(t.SavePath, 0777)
-	//创建文件
+	//创建文件a
 	filePath := t.SavePath + fileName
 	f, err := os.Create(filePath)
 	defer f.Close()
