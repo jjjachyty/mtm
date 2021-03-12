@@ -137,6 +137,7 @@ func (t2s *TableToStruct) Run() error {
 			"	return" + " &pb." + structName + "{\n"
 		funcPbs := "type " + structName + "s  []*" + structName + "\n\n" +
 			"func (v " + structName + "s" + ")" + "Pbs" + "()" + "(data []*pb." + structName + "){" + "\n" + "" +
+			"   data = make([]*pb." + structName + "," + "0)" +
 			"	for _,v := range v { \n" +
 			"		data = append(data," + "&pb." + structName + "{\n"
 		for columns.Next() {
