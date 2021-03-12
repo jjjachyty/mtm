@@ -18,15 +18,15 @@ var typeForMysqlToGo = map[string]string{
 	"int":                "int32",
 	"integer":            "int32",
 	"tinyint":            "int32",
-	"smallint":           "int",
-	"mediumint":          "int",
+	"smallint":           "int32",
+	"mediumint":          "int32",
 	"bigint":             "int64",
-	"int unsigned":       "int",
-	"integer unsigned":   "int",
-	"tinyint unsigned":   "int",
-	"smallint unsigned":  "int",
-	"mediumint unsigned": "int",
-	"bigint unsigned":    "int",
+	"int unsigned":       "uint32",
+	"integer unsigned":   "uint32",
+	"tinyint unsigned":   "uint32",
+	"smallint unsigned":  "uint32",
+	"mediumint unsigned": "uint32",
+	"bigint unsigned":    "uint64",
 	"bit":                "int",
 	"bool":               "bool",
 	"enum":               "string",
@@ -86,7 +86,7 @@ func (t2s *TableToStruct) Run() error {
 	if err != nil {
 		return err
 	}
-	tables, err := db.Query("SELECT table_schema,table_name FROM information_schema.TABLES WHERE table_schema=DATABASE () AND table_type='BASE TABLE'; ")
+	tables, err := db.Query("SELECT table_schema,table_name FROM information_schema.TABLES WHERE table_schema=DATABASE () AND table_name like 'app%' AND table_type='BASE TABLE'; ")
 	if err != nil {
 		return err
 	}
@@ -209,15 +209,17 @@ func (t2s *TableToStruct) Run() error {
 }
 
 type Options struct {
-	MySqlUrl                string //数据库地址 DSN (Data Source Name) ：[username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]
-	IfOneFile               bool   //多个表是否放在同一文件 true=同一文件 默认false
-	FileName                string //文件名 当IfOneFile=true时有效 默认Models.go
-	PackageName             string //自定义项目package名称 默认Models
-	SavePath                string //保存文件夹 默认./Models
-	IfToHump                bool   //是否转换驼峰 true=是 默认false
-	IfJsonTag               bool   //是否包含json tag true=是 默认false
-	IfPluralToSingular      bool   //是否复数转单数 true=是 默认false
-	IfCapitalizeFirstLetter bool   //是否首字母转换大写 true=是 默认false
+	MySqlUrl                string   //数据库地址 DSN (Data Source Name) ：[username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]
+	IfOneFile               bool     //多个表是否放在同一文件 true=同一文件 默认false
+	FileName                string   //文件名 当IfOneFile=true时有效 默认Models.go
+	PackageName             string   //自定义项目package名称 默认Models
+	SavePath                string   //保存文件夹 默认./Models
+	IfToHump                bool     //是否转换驼峰 true=是 默认false
+	IfJsonTag               bool     //是否包含json tag true=是 默认false
+	IfPluralToSingular      bool     //是否复数转单数 true=是 默认false
+	IfCapitalizeFirstLetter bool     //是否首字母转换大写 true=是 默认false
+	IfFunc                  bool     //是否生成Pbs
+	FuncImport              []string //引用的包路径
 }
 type TableToStruct struct {
 	MySqlUrl                string
@@ -231,8 +233,9 @@ type TableToStruct struct {
 	IfCapitalizeFirstLetter bool
 	tableToFile             []*TableToFile
 	Comment                 string
+	IfFunc                  bool
+	FuncImport              []string
 }
-
 type TableToFile struct {
 	_import   map[string]string
 	_struct   string
