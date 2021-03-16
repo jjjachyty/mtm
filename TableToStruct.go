@@ -140,7 +140,6 @@ func (t2s *TableToStruct) Run() error {
 			"   data = make([]*pb." + structName + "," + "0) \n" +
 			"	for _,v := range v { \n" +
 			"		data = append(data," + "&pb." + structName + "{\n"
-
 		funcEn := "func (v *" + structName + ")Pb2Entity" + "(data *pb." + structName + "){" + "\n"
 		for columns.Next() {
 			columnName := ""
@@ -199,7 +198,7 @@ func (t2s *TableToStruct) Run() error {
 		funcPb += "}\n	}\n"
 		funcPbs += "})\n	}\n return \n}\n"
 		funcEn += "}\n	"
-		ttf._func = funcPb + funcPbs
+		ttf._func = funcPb + funcPbs + funcEn
 		t2s.tableToFile = append(t2s.tableToFile, ttf)
 	}
 	//4、写入文件
