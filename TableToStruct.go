@@ -140,6 +140,8 @@ func (t2s *TableToStruct) Run() error {
 			"   data = make([]*pb." + structName + "," + "0) \n" +
 			"	for _,v := range v { \n" +
 			"		data = append(data," + "&pb." + structName + "{\n"
+
+		funcEn := "func (v *" + structName + ")Pb2Entity" + "(data *pb." + structName + "){" + "\n"
 		for columns.Next() {
 			columnName := ""
 			dataType := ""
@@ -177,6 +179,7 @@ func (t2s *TableToStruct) Run() error {
 
 			funcPb += "			" + columnName2 + ":" + "v." + columnName2 + ",\n"
 			funcPbs += "		" + columnName2 + ":" + "v." + columnName2 + ",\n"
+			funcEn += "         " + "v." + columnName2 + " = " + "data." + columnName2 + "\n"
 			if t2s.IfToHump {
 				columnName = toHump(columnName)
 			}
@@ -195,6 +198,7 @@ func (t2s *TableToStruct) Run() error {
 		}
 		funcPb += "}\n	}\n"
 		funcPbs += "})\n	}\n return \n}\n"
+		funcEn += "}\n	"
 		ttf._func = funcPb + funcPbs
 		t2s.tableToFile = append(t2s.tableToFile, ttf)
 	}
