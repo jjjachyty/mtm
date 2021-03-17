@@ -50,6 +50,7 @@ var typeForMysqlToGo = map[string]string{
 	"decimal":            "float64",
 	"binary":             "string",
 	"varbinary":          "string",
+	"json":               "string",
 }
 
 func CreateTableToStruct(options *Options) *TableToStruct {
@@ -195,9 +196,9 @@ func (t2s *TableToStruct) Run() error {
 				columnName = strFirstToLower(columnName)
 			}
 		}
-		funcPb += "}\n	}\n"
-		funcPbs += "})\n	}\n return \n}\n"
-		funcEn += "}\n	"
+		funcPb += "}\n	}\n\n"
+		funcPbs += "})\n	}\n return \n}\n\n"
+		funcEn += "}\n\n	"
 		ttf._func = funcPb + funcPbs + funcEn
 		t2s.tableToFile = append(t2s.tableToFile, ttf)
 	}
