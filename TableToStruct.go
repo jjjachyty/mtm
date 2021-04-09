@@ -127,7 +127,7 @@ func (t2s *TableToStruct) Run() error {
 		if t2s.IfCapitalizeFirstLetter {
 			structName = strFirstToUpper(structName)
 		}
-		structName = strFirstToUpper(structName)
+
 		ttf._fileName = strFirstToLower(structName)
 		ttf._comment = "//" + structName + "\n"
 		ttf._struct = "type " + structName + " struct {\n"
@@ -170,13 +170,17 @@ func (t2s *TableToStruct) Run() error {
 			if t2s.IfToHump {
 				columnName2 = toHump(columnName2)
 			}
-			columnName2 = strFirstToLower(columnName2)
+			if t2s.IfCapitalizeFirstLetter {
+				columnName2 = strFirstToUpper(columnName2)
+			} else {
+				columnName2 = strFirstToLower(columnName2)
+			}
 
-			ttf._property = append(ttf._property, fmt.Sprintf("	%s %s `db:\"%s\" json:\"%s\" ` //%s", columnName2, _type, columnName, columnName2, columnComment))
+			ttf._property = append(ttf._property, fmt.Sprintf("	%s %s `db:\"%s\" json:\"%s\" ` //%s", columnName2, _type, columnName, strFirstToLower(columnName2), columnComment))
 
-			funcPb += "			" + strFirstToUpper(columnName2) + ":" + "v." + columnName2 + ",\n"
-			funcPbs += "		" + strFirstToUpper(columnName2) + ":" + "v." + columnName2 + ",\n"
-			funcEn += "         " + "v." + columnName2 + " = " + "data." + strFirstToUpper(columnName2) + "\n"
+			funcPb += "			" + columnName2 + ":" + "v." + columnName2 + ",\n"
+			funcPbs += "		" + columnName2 + ":" + "v." + columnName2 + ",\n"
+			funcEn += "         " + "v." + columnName2 + " = " + "data." + columnName2 + "\n"
 			if t2s.IfToHump {
 				columnName = toHump(columnName)
 			}
