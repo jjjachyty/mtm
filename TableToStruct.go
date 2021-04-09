@@ -127,6 +127,7 @@ func (t2s *TableToStruct) Run() error {
 		if t2s.IfCapitalizeFirstLetter {
 			structName = strFirstToUpper(structName)
 		}
+		structName = strFirstToUpper(structName)
 		ttf._fileName = strFirstToLower(structName)
 		ttf._comment = "//" + structName + "\n"
 		ttf._struct = "type " + structName + " struct {\n"
