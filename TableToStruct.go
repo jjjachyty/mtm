@@ -174,9 +174,9 @@ func (t2s *TableToStruct) Run() error {
 
 			ttf._property = append(ttf._property, fmt.Sprintf("	%s %s `db:\"%s\" json:\"%s\" ` //%s", columnName2, _type, columnName, columnName2, columnComment))
 
-			funcPb += "			" + columnName2 + ":" + "v." + columnName2 + ",\n"
-			funcPbs += "		" + columnName2 + ":" + "v." + columnName2 + ",\n"
-			funcEn += "         " + "v." + columnName2 + " = " + "data." + columnName2 + "\n"
+			funcPb += "			" + strFirstToUpper(columnName2) + ":" + "v." + columnName2 + ",\n"
+			funcPbs += "		" + strFirstToUpper(columnName2) + ":" + "v." + columnName2 + ",\n"
+			funcEn += "         " + "v." + columnName2 + " = " + "data." + strFirstToUpper(columnName2) + "\n"
 			if t2s.IfToHump {
 				columnName = toHump(columnName)
 			}
