@@ -169,11 +169,7 @@ func (t2s *TableToStruct) Run() error {
 			if t2s.IfToHump {
 				columnName2 = toHump(columnName2)
 			}
-			if t2s.IfCapitalizeFirstLetter {
-				columnName2 = strFirstToUpper(columnName2)
-			} else {
-				columnName2 = strFirstToLower(columnName2)
-			}
+			columnName2 = strFirstToLower(columnName2)
 
 			ttf._property = append(ttf._property, fmt.Sprintf("	%s %s `db:\"%s\" json:\"%s\" ` //%s", columnName2, _type, columnName, columnName2, columnComment))
 
