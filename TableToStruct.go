@@ -87,7 +87,7 @@ func (t2s *TableToStruct) Run() error {
 	if err != nil {
 		return err
 	}
-	tables, err := db.Query("SELECT table_schema,table_name FROM information_schema.TABLES WHERE table_schema=DATABASE () AND table_name like 'app%' AND table_type='BASE TABLE'; ")
+	tables, err := db.Query("SELECT table_schema,table_name FROM information_schema.TABLES WHERE table_schema=DATABASE () AND table_type='BASE TABLE'; ")
 	if err != nil {
 		return err
 	}
