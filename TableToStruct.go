@@ -42,7 +42,7 @@ var typeForMysqlToGo = map[string]string{
 	"mediumblob":         "string",
 	"longblob":           "string",
 	"date":               "time.Time", // time.Time or string
-	"datetime":           "time.Time", // time.Time or string
+	"datetime":           "string",    // time.Time or string
 	"timestamp":          "time.Time", // time.Time or string
 	"time":               "time.Time", // time.Time or string
 	"float":              "float32",
