@@ -2,12 +2,13 @@ package mtm
 
 import (
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
 	"os/exec"
 	"regexp"
 	"strings"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 //参考
@@ -358,11 +359,15 @@ func toSingular(word string) string {
 	return word
 }
 
-//转换驼峰
+//转换驼峰 id =>ID
 func toHump(c string) string {
 	cg := strings.Split(c, "_")
 	p := ""
 	for _, v := range cg {
+		if v == "id" {
+			p += "ID"
+			continue
+		}
 		p += strFirstToUpper(v)
 	}
 	return p
