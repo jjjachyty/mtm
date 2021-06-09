@@ -1,4 +1,4 @@
-module github.com/chen-t-t/mtm
+module github.com/jjjachyty/mtm
 
 go 1.16
 
