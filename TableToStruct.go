@@ -331,6 +331,9 @@ func strFirstToLower(str string) string {
 	if len(str) < 1 {
 		return ""
 	}
+	if str == "ID" {
+		return "id"
+	}
 	//if unicode.IsLower([]rune(str)[0]) {
 	//	return str
 	//}
@@ -364,7 +367,7 @@ func toHump(c string) string {
 	cg := strings.Split(c, "_")
 	p := ""
 	for _, v := range cg {
-		if v == "id" {
+		if v == "Id" {
 			p += "ID"
 			continue
 		}
