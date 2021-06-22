@@ -367,7 +367,7 @@ func toHump(c string) string {
 	cg := strings.Split(c, "_")
 	p := ""
 	for _, v := range cg {
-		if v == "Id" {
+		if v == "Id" || v == "id" {
 			p += "ID"
 			continue
 		}
