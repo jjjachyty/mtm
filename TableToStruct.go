@@ -28,6 +28,7 @@ var typeForMysqlToGo = map[string]string{
 	"smallint unsigned":  "uint32",
 	"mediumint unsigned": "uint32",
 	"bigint unsigned":    "uint64",
+	"decimal unsigned":   "uint64",
 	"bit":                "int",
 	"bool":               "bool",
 	"enum":               "string",
@@ -82,7 +83,7 @@ func CreateTableToStruct(options *Options) *TableToStruct {
 	}
 	return t2s
 }
-func (t2s *TableToStruct) Run() error {
+func (t2s *TableToStruct) Run(pbUrl string) error {
 	//1、获取table列表
 	db, err := CreateMysqlDb(t2s.MySqlUrl)
 	if err != nil {
@@ -107,7 +108,7 @@ func (t2s *TableToStruct) Run() error {
 		ttf._struct = structName
 
 		//2、循环获取table Column列表
-		columns, err := db.Query("SELECT COLUMN_NAME,DATA_TYPE,IS_NULLABLE,TABLE_NAME,COLUMN_COMMENT FROM information_schema.COLUMNS WHERE table_schema=DATABASE () AND table_name=? order by ORDINAL_POSITION;", structName)
+		columns, err := db.Query("SELECT COLUMN_NAME,DATA_TYPE,COLUMN_TYPE,IS_NULLABLE,TABLE_NAME,COLUMN_COMMENT FROM information_schema.COLUMNS WHERE table_schema=DATABASE () AND table_name=? order by ORDINAL_POSITION;", structName)
 		if err != nil {
 			return err
 		}
@@ -134,7 +135,7 @@ func (t2s *TableToStruct) Run() error {
 		ttf._struct = "type " + structName + " struct {\n"
 		//3.2、输出属性
 		ttf._property = make([]string, 0)
-		ttf._import["pb"] = `"pkg/proto/message/pb"`
+		ttf._import["pb"] = pbUrl
 
 		funcPb := "func (v *" + structName + ")" + "Pb" + "()" + "*pb." + structName + "{" + "\n" +
 			"	return" + " &pb." + structName + "{\n"
@@ -149,11 +150,25 @@ func (t2s *TableToStruct) Run() error {
 			dataType := ""
 			isNullable := ""
 			tableName := ""
+			columnType := ""
 			columnComment := ""
-			err = columns.Scan(&columnName, &dataType, &isNullable, &tableName, &columnComment)
+			err = columns.Scan(&columnName, &dataType, &columnType, &isNullable, &tableName, &columnComment)
 			if err != nil {
 				return err
 			}
+			//_type := ""
+			//var ok bool
+			//if strings.Contains(columnType, "unsigned") {
+			//	_type, ok = typeForMysqlToGo[columnType]
+			//	if !ok {
+			//		_type = "[]byte"
+			//	}
+			//} else {
+			//	_type, ok = typeForMysqlToGo[dataType]
+			//	if !ok {
+			//		_type = "[]byte"
+			//	}
+			//}
 			_type, ok := typeForMysqlToGo[dataType]
 			if !ok {
 				_type = "[]byte"
@@ -161,7 +176,13 @@ func (t2s *TableToStruct) Run() error {
 			if _type == "time.Time" {
 				ttf._import["time"] = `"time"`
 			}
+			//单独处理unixtime
+			if strings.Contains(columnName, "_At") {
+				_type = "int64"
+			}
+
 			columnName2 := ""
+
 			if t2s.IfCapitalizeFirstLetter {
 				columnName2 = strFirstToUpper(columnName)
 			} else {
