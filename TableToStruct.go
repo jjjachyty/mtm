@@ -177,7 +177,7 @@ func (t2s *TableToStruct) Run(pbUrl string) error {
 				ttf._import["time"] = `"time"`
 			}
 			//单独处理unixtime
-			if strings.Contains(columnName, "_At") {
+			if strings.Contains(strings.ToLower(columnName), "_at") {
 				_type = "int64"
 			}
 
