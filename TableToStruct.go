@@ -176,11 +176,6 @@ func (t2s *TableToStruct) Run(pbUrl string) error {
 			if _type == "time.Time" {
 				ttf._import["time"] = `"time"`
 			}
-			//单独处理unixtime
-			if strings.Contains(strings.ToLower(columnName), "_at") {
-				_type = "int64"
-			}
-
 			columnName2 := ""
 
 			if t2s.IfCapitalizeFirstLetter {
