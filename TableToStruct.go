@@ -151,7 +151,8 @@ func (t2s *TableToStruct) Run(pbUrl string) error {
 			"	for _,v := range v { \n" +
 			"		data = append(data,&" + structName + "{\n"
 
-		funcEn := "func (v *" + structName + ")Pb2Entity" + "(data *pb." + structName + "){" + "\n"
+		funcEn := "func (v *" + structName + ")Pb2Entity" + "(data *pb." + structName + "){" + "\n" +
+			"if data == nil{return}"
 		for columns.Next() {
 			columnName := ""
 			dataType := ""
