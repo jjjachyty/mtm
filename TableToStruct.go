@@ -14,7 +14,7 @@ import (
 //参考
 //https://blog.csdn.net/Charles_Thanks/article/details/80503124
 
-//map for converting mysql type to golang types
+// map for converting mysql type to golang types
 var typeForMysqlToGo = map[string]string{
 	"int":                "int32",
 	"integer":            "int32",
@@ -135,23 +135,25 @@ func (t2s *TableToStruct) Run(pbUrl string) error {
 		ttf._struct = "type " + structName + " struct {\n"
 		//3.2、输出属性
 		ttf._property = make([]string, 0)
-		ttf._import["pb"] = pbUrl
+		urls := strings.Split(pbUrl, " ")
+		alias := urls[0]
+		ttf._import[alias] = pbUrl
 
-		funcPb := "func (v *" + structName + ")" + "Pb" + "()" + "*pb." + structName + "{" + "\n" +
-			"	return" + " &pb." + structName + "{\n"
+		funcPb := "func (v *" + structName + ")" + "Pb" + "()" + "*" + alias + "." + structName + "{" + "\n" +
+			"	return" + " &" + alias + "." + structName + "{\n"
 		funcPbs := "type " + structName + "s  []*" + structName + "\n\n" +
-			"func (v " + structName + "s" + ")" + "Pbs" + "()" + "(data []*pb." + structName + "){" + "\n" + "" +
-			"   data = make([]*pb." + structName + "," + "0) \n" +
+			"func (v " + structName + "s" + ")" + "Pbs" + "()" + "(data []*" + alias + "." + structName + "){" + "\n" + "" +
+			"   data = make([]*" + alias + "." + structName + "," + "0) \n" +
 			"	for _,v := range v { \n" +
-			"		data = append(data," + "&pb." + structName + "{\n"
+			"		data = append(data," + "&" + alias + "." + structName + "{\n"
 
-		funcEntitys := "type " + structName + "Pbs  []*pb." + structName + "\n\n" +
+		funcEntitys := "type " + structName + "Pbs  []*" + alias + "." + structName + "\n\n" +
 			"func (v " + structName + "Pbs" + ")" + "Entitys" + "()" + "(data []*" + structName + "){" + "\n" + "" +
 			"   data = make([]*" + structName + "," + "0) \n" +
 			"	for _,v := range v { \n" +
 			"		data = append(data,&" + structName + "{\n"
 
-		funcEn := "func (v *" + structName + ")Pb2Entity" + "(data *pb." + structName + "){" + "\n" +
+		funcEn := "func (v *" + structName + ")Pb2Entity" + "(data *" + alias + "." + structName + "){" + "\n" +
 			"if data == nil{return} \n"
 		for columns.Next() {
 			columnName := ""
@@ -337,7 +339,7 @@ func (t *TableToStruct) save(fileName string, content string) error {
 
 }
 
-//Convert The First Letter To Capitalize
+// Convert The First Letter To Capitalize
 func strFirstToUpper(str string) string {
 	if len(str) < 1 {
 		return ""
@@ -352,7 +354,7 @@ func strFirstToUpper(str string) string {
 	return string(strArry)
 }
 
-//Convert The First Letter To Capitalize
+// Convert The First Letter To Capitalize
 func strFirstToLower(str string) string {
 	if len(str) < 1 {
 		return ""
@@ -370,7 +372,7 @@ func strFirstToLower(str string) string {
 	return string(strArry)
 }
 
-//Convert The Plural To Singular
+// Convert The Plural To Singular
 func toSingular(word string) string {
 	plural1, _ := regexp.Compile("([^aeiou])ies$")
 	plural2, _ := regexp.Compile("([aeiou]y)s$")
@@ -388,7 +390,7 @@ func toSingular(word string) string {
 	return word
 }
 
-//转换驼峰 id =>ID
+// 转换驼峰 id =>ID
 func toHump(c string) string {
 	cg := strings.Split(c, "_")
 	p := ""
