@@ -403,3 +403,97 @@ func toHump(c string) string {
 	}
 	return p
 }
+
+func (t2s *TableToStruct) RunStruct() error {
+	//1、获取table列表
+	db, err := CreateMysqlDb(t2s.MySqlUrl)
+	if err != nil {
+		return err
+	}
+	tables, err := db.Query("SELECT table_schema,table_name FROM information_schema.TABLES WHERE table_schema=DATABASE () AND table_type='BASE TABLE'; ")
+	if err != nil {
+		return err
+	}
+	defer tables.Close()
+
+	for tables.Next() {
+		tableSchema := ""
+		structName := ""
+
+		err = tables.Scan(&tableSchema, &structName)
+		if err != nil {
+			return err
+		}
+		ttf := new(TableToFile)
+		ttf._import = make(map[string]string)
+		ttf._struct = structName
+		//2、循环获取table Column列表
+		columns, err := db.Query("SELECT COLUMN_NAME,DATA_TYPE,IS_NULLABLE,TABLE_NAME,COLUMN_COMMENT FROM information_schema.COLUMNS WHERE table_schema=DATABASE () AND table_name=?;", structName)
+		if err != nil {
+			return err
+		}
+		defer columns.Close()
+		//3、打印输出格式
+		//3.1、输出类名
+		if t2s.IfToHump {
+			structName = toHump(structName)
+		}
+		if t2s.IfPluralToSingular {
+			structName = toSingular(structName)
+		}
+		if t2s.IfCapitalizeFirstLetter {
+			structName = strFirstToUpper(structName)
+		} else {
+			structName = strFirstToLower(structName)
+		}
+		if t2s.IfCapitalizeFirstLetter {
+			structName = strFirstToUpper(structName)
+		}
+		ttf._fileName = structName
+		ttf._struct = "type " + structName + " struct {\n"
+		//3.2、输出属性
+		ttf._property = make([]string, 0)
+		for columns.Next() {
+			columnName := ""
+			dataType := ""
+			isNullable := ""
+			tableName := ""
+			columnComment := ""
+			err = columns.Scan(&columnName, &dataType, &isNullable, &tableName, &columnComment)
+			if err != nil {
+				return err
+			}
+			_type, ok := typeForMysqlToGo[dataType]
+			if !ok {
+				_type = "[]byte"
+			}
+			if _type == "time.Time" {
+				ttf._import["time"] = `"time"`
+			}
+			if t2s.IfToHump {
+				columnName = toHump(columnName)
+			}
+			if t2s.IfCapitalizeFirstLetter {
+				columnName = strFirstToUpper(columnName)
+			} else {
+				columnName = strFirstToLower(columnName)
+			}
+
+			if t2s.IfJsonTag {
+				ttf._property = append(ttf._property, fmt.Sprintf("	%s %s `json:\"%s\"` //%s", columnName, _type, columnName, columnComment))
+			} else {
+				ttf._property = append(ttf._property, fmt.Sprintf("	%s %s //%s", columnName, _type, columnComment))
+			}
+		}
+		t2s.tableToFile = append(t2s.tableToFile, ttf)
+	}
+	//4、写入文件
+	err = t2s.saveToFile()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	cmd := exec.Command("gofmt", "-w", t2s.SavePath)
+	cmd.Run()
+	log.Print("模型装换成功")
+	return nil
+}
